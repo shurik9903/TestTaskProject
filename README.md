@@ -143,7 +143,7 @@
 
 # Как это работает
 
-![[diagram.png]]
+![Application Diagram](diagram.png)
 
 #### Пользователь <---> Бот
 
