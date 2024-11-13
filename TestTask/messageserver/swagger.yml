@@ -1,0 +1,220 @@
+openapi: 3.1.0
+info:
+  title: Messenger Service
+  description: |-
+    Сервис для сохранения сообщений, полученных со стороны клиента
+        в общую коллекцию сообщений и отправка всех сохранённых сообщений по запросу клиента
+  version: 0.1.0
+paths:
+  "/api/v1/messages":
+    get:
+      tags:
+        - messages
+      summary: Get All Messages
+      description:
+        "Вывод всех сообщений начиная от стартовой позиции (start) и\n
+        \                   количеством сообщений (range), \n                    если
+        количество не указано выведет все сообщения начиная от стартовой позиции (start)"
+      operationId: get_all_messages_api_v1_messages_get
+      parameters:
+        - name: start
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: integer
+              - type: "null"
+            description: Стартовая позиция получения сообщений
+            default: 0
+            title: Start
+          description: Стартовая позиция получения сообщений
+        - name: range
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: integer
+              - type: "null"
+            description: Количество сообщений начиная со стартовой позиции
+            default: 0
+            title: Range
+          description: Количество сообщений начиная со стартовой позиции
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/MessagesUserDTO"
+        "404":
+          messages: Not found
+          description: Not Found
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/HTTPValidationError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/HTTPError"
+  "/api/v1/message":
+    post:
+      tags:
+        - messages
+      summary: Send Messages
+      description: Сохранит сообщение, полученное в теле запроса и закеширует его
+      operationId: send_messages_api_v1_message_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Body_send_messages_api_v1_message_post"
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        "404":
+          description: Not Found
+          messages: Not found
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/HTTPValidationError"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/HTTPError"
+components:
+  schemas:
+    Body_send_messages_api_v1_message_post:
+      properties:
+        user:
+          "$ref": "#/components/schemas/UserDTO"
+        message:
+          "$ref": "#/components/schemas/MessageDTO"
+      type: object
+      title: Body_send_messages_api_v1_message_post
+    HTTPError:
+      properties:
+        detail:
+          type: string
+          title: Detail
+      type: object
+      required:
+        - detail
+      title: HTTPError
+      example:
+        detail: HTTPException raised.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            "$ref": "#/components/schemas/ValidationError"
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    MessageDTO:
+      properties:
+        timestamp:
+          anyOf:
+            - type: string
+              format: date-time
+            - type: "null"
+          title: Timestamp
+        message:
+          type: string
+          title: Message
+      type: object
+      required:
+        - message
+      title: MessageDTO
+    MessageUserDTO:
+      properties:
+        user:
+          type: string
+          title: User
+        timestamp:
+          type: string
+          title: Timestamp
+        message:
+          type: string
+          title: Message
+      type: object
+      required:
+        - user
+        - timestamp
+        - message
+      title: MessageUserDTO
+    MessagesUserDTO:
+      properties:
+        messages:
+          items:
+            "$ref": "#/components/schemas/MessageUserDTO"
+          type: array
+          title: Messages
+        total_count:
+          type: integer
+          title: Total Count
+      type: object
+      required:
+        - messages
+        - total_count
+      title: MessagesUserDTO
+    UserDTO:
+      properties:
+        userId:
+          type: string
+          title: Userid
+        first_name:
+          type: string
+          title: First Name
+        last_name:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Last Name
+        username:
+          anyOf:
+            - type: string
+            - type: "null"
+          title: Username
+      type: object
+      required:
+        - userId
+        - first_name
+      title: UserDTO
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+        - loc
+        - msg
+        - type
+      title: ValidationError
+tags:
+  - name: messages
+    description: Метод по работе с сообщениями
